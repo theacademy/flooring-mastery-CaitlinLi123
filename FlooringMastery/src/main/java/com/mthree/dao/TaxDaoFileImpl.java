@@ -8,16 +8,17 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 @Component
 public class TaxDaoFileImpl implements TaxDao{
     private Map<String, Tax> allTaxes;
-    private final static String TAX_FILE = "/Data/Taxes.txt";
+    private final static String TAX_FILE = "Data/Taxes.txt";
     private final static String DELIMETER = ",";
+
+    public TaxDaoFileImpl(){
+        this.allTaxes = new HashMap<>();
+    }
 
     @Override
     public void loadFile() throws PersistenceException {
@@ -65,7 +66,8 @@ public class TaxDaoFileImpl implements TaxDao{
 
 
     @Override
-    public List<Tax> getAllTaxes() {
+    public List<Tax> getAllTaxes() throws PersistenceException {
+        loadFile();
         return new ArrayList<>(allTaxes.values());
     }
 }

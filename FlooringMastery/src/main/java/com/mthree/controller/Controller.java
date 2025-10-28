@@ -27,10 +27,10 @@ public class Controller {
     public void run(){
         boolean keepGoing = true;
         int menuSelection = 0;
-        try{
+
             while (keepGoing){
                 menuSelection = getMenuSelection();
-
+                try{
                 switch (menuSelection){
                     case 1:
                         displayOrders();
@@ -49,15 +49,16 @@ public class Controller {
                         break;
                     case 6:
                         keepGoing = false;
+                        exitMessage();
                         break;
                     default:
                         unknownCommand();
-                }
-                exitMessage();
+                }}
+                catch (Exception e){
+                        view.displayErrorMessage(e.getMessage());
+                    }
             }
-        }catch (Exception e){
-            view.displayErrorMessage(e.getMessage());
-        }
+
     }
 
     private void exitMessage() {
@@ -68,7 +69,7 @@ public class Controller {
         view.displayUnknownCommandMessage();
     }
 
-    private void exportAllData() {
+    private void exportAllData() throws PersistenceException {
         service.exportData();
     }
 
@@ -155,7 +156,7 @@ public class Controller {
         }
     }
 
-    private void addAnOrder() {
+    private void addAnOrder() throws PersistenceException {
         view.displayAddOrderBanner();
 
         // Prompt the user for the date

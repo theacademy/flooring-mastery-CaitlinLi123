@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ProductDao {
    void loadFile() throws PersistenceException;
-   List<Product> getAllProducts();
+   List<Product> getAllProducts() throws PersistenceException;
 }

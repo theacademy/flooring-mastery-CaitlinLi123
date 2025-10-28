@@ -16,6 +16,7 @@ public class OrderDaoFileImpl implements OrderDao {
     private Map<LocalDate, Map<Integer,Order>> orders = new HashMap<>();
     public static final String DELIMITER = ",";
     public static final String ORDER_FOLDER = "Orders/";
+    private static final String HEADER = "OrderNumber,CustomerName,State,TaxRate,ProductType,Area,CostPerSquareFoot,LaborCostPerSquareFoot,MaterialCost,LaborCost,Tax,Total";
     private int largestOrderNumber;
 
     public OrderDaoFileImpl() throws PersistenceException {
@@ -52,6 +53,10 @@ public class OrderDaoFileImpl implements OrderDao {
             // get the corresponding order by date
             String orderAsText;
             Map<Integer,Order> orderMap = orders.get(date);
+
+            // write the header
+            out.println(HEADER);
+            out.flush();
 
             // write to flie
             for(Order order:orderMap.values()){
@@ -114,7 +119,7 @@ public class OrderDaoFileImpl implements OrderDao {
         String dateStr = sb.toString();
 
         // the dateStr is in MM/dd/yyyy format
-        LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+        LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("MMddyyyy"));
         return date;
     }
 

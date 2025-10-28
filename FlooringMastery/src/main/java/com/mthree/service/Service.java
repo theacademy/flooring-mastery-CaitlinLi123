@@ -23,9 +23,9 @@ public interface Service {
 
     void exportData() throws PersistenceException;
 
-    List<Tax> getTaxes();
+    List<Tax> getTaxes() throws PersistenceException;
 
-    List<Product> getProducts();
+    List<Product> getProducts() throws PersistenceException;
 
     void writeToAudit(String message) throws PersistenceException;
 

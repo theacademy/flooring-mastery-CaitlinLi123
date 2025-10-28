@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface TaxDao {
     void loadFile() throws PersistenceException;
-    List<Tax> getAllTaxes();
+    List<Tax> getAllTaxes() throws PersistenceException;
 }

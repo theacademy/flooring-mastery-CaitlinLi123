@@ -8,16 +8,17 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 @Component
 public class ProductDaoFileImpl implements ProductDao{
     private Map<String,Product> allProducts;
-    private final static String PRODUCT_FILE = "/Data/Products.txt";
+    private final static String PRODUCT_FILE = "Data/Products.txt";
     private final static String DELIMETER = ",";
+
+    public ProductDaoFileImpl(){
+        this.allProducts = new HashMap<>();
+    }
 
     @Override
     public void loadFile() throws PersistenceException {
@@ -65,7 +66,8 @@ public class ProductDaoFileImpl implements ProductDao{
     }
 
     @Override
-    public List<Product> getAllProducts() {
+    public List<Product> getAllProducts() throws PersistenceException {
+        loadFile();
         return new ArrayList<>(allProducts.values());
     }
 }

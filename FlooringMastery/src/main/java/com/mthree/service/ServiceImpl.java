@@ -65,12 +65,12 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public List<Tax> getTaxes() {
+    public List<Tax> getTaxes() throws PersistenceException {
         return taxDao.getAllTaxes();
     }
 
     @Override
-    public List<Product> getProducts() {
+    public List<Product> getProducts() throws PersistenceException {
         return productDao.getAllProducts();
     }
 

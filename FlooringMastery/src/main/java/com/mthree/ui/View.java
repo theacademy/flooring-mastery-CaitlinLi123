@@ -132,6 +132,7 @@ public class View {
     }
 
     public void displayAllProducts(List<Product> products){
+        io.print("------Here's all the available products------");
         for(Product product: products){
             // ProductType,CostPerSquareFoot,LaborCostPerSquareFoot
             String info = product.getProductType() + DELIMITER
@@ -140,6 +141,7 @@ public class View {
 
             io.print(info);
         }
+        io.print("----------------------------------------------");
     };
 
     public void displayAddOrderSuccess(){
@@ -261,10 +263,10 @@ public class View {
 
         while(true){
             customerName = io.readString(message);
-            if(customerName.matches(" [a-zA-Z0-9]+")){
+            if(customerName.matches("^[a-zA-Z0-9 ]+$")){
                 break;
             }else{
-                System.out.println("🚫Invalid input. Please try again");
+                io.print("🚫Invalid input. Please try again");
             }
         }
 
