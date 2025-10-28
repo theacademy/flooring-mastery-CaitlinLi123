@@ -11,17 +11,5 @@ public interface UserIO {
 
     public int readInt(String msgPrompt, int min, int max);
 
-    public long readLong(String msgPrompt);
-
-    public long readLong(String msgPrompt, long min, long max);
-
-    public float readFloat(String msgPrompt);
-
-    public float readFloat(String msgPrompt, float min, float max);
-
-    public double readDouble(String msgPrompt);
-
-    public double readDouble(String msgPrompt, double min, double max);
-
     public LocalDate readDate(String s);
 }

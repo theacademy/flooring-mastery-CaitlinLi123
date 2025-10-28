@@ -54,68 +54,6 @@ public class UserIOConsoleImpl implements UserIO{
     }
 
     @Override
-    public long readLong(String msgPrompt) {
-        while (true) {
-            try {
-                return Long.parseLong(this.readString(msgPrompt));
-            } catch (NumberFormatException e) {
-                this.print("Input error. Please try again.");
-            }
-        }
-    }
-
-    @Override
-    public long readLong(String msgPrompt, long min, long max) {
-        long result;
-        do {
-            result = readLong(msgPrompt);
-        } while (result < min || result > max);
-
-        return result;
-    }
-
-    @Override
-    public float readFloat(String msgPrompt) {
-        while (true) {
-            try {
-                return Float.parseFloat(this.readString(msgPrompt));
-            } catch (NumberFormatException e) {
-                this.print("Input error. Please try again.");
-            }
-        }
-    }
-
-    @Override
-    public float readFloat(String msgPrompt, float min, float max) {
-        float result;
-        do {
-            result = readFloat(msgPrompt);
-        } while (result < min || result > max);
-
-        return result;
-    }
-
-    @Override
-    public double readDouble(String msgPrompt) {
-        while (true) {
-            try {
-                return Double.parseDouble(this.readString(msgPrompt));
-            } catch (NumberFormatException e) {
-                this.print("Input error. Please try again.");
-            }
-        }
-    }
-
-    @Override
-    public double readDouble(String msgPrompt, double min, double max) {
-        double result;
-        do {
-            result = readDouble(msgPrompt);
-        } while (result < min || result > max);
-        return result;
-    }
-
-    @Override
     public LocalDate readDate(String msgPrompt) {
         while (true){
             try{
