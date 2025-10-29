@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class OrderDaoFileImpl implements OrderDao {
-    private Map<LocalDate, Map<Integer,Order>> orders = new HashMap<>();
+    private Map<LocalDate, Map<Integer, Order>> orders = new HashMap<>();
     public static final String DELIMITER = ",";
     public static final String ORDER_FOLDER = "Orders/";
     private static final String HEADER = "OrderNumber,CustomerName,State,TaxRate,ProductType,Area,CostPerSquareFoot,LaborCostPerSquareFoot,MaterialCost,LaborCost,Tax,Total";
@@ -34,39 +34,39 @@ public class OrderDaoFileImpl implements OrderDao {
     public void writeToFile() throws PersistenceException {
         PrintWriter out;
 
-        for(LocalDate date: orders.keySet()){
-           writeToFile(date);
+        for (LocalDate date : orders.keySet()) {
+            writeToFile(date);
         }
     }
 
     public void writeToFile(LocalDate date) throws PersistenceException {
         PrintWriter out;
 
-            // load the order file
-            String filename = generateOrderFilename(date);
+        // load the order file
+        String filename = generateOrderFilename(date);
 
-            try{
-                out = new PrintWriter(new FileWriter(filename));
-            }catch (IOException e){
-                throw new PersistenceException("Could not save student data.", e);
-            }
+        try {
+            out = new PrintWriter(new FileWriter(filename));
+        } catch (IOException e) {
+            throw new PersistenceException("Could not save student data.", e);
+        }
 
-            // get the corresponding order by date
-            String orderAsText;
-            Map<Integer,Order> orderMap = orders.get(date);
+        // get the corresponding order by date
+        String orderAsText;
+        Map<Integer, Order> orderMap = orders.get(date);
 
-            // write the header
-            out.println(HEADER);
+        // write the header
+        out.println(HEADER);
+        out.flush();
+
+        // write to flie
+        for (Order order : orderMap.values()) {
+            orderAsText = marshallOrder(order);
+            out.println(orderAsText);
             out.flush();
+        }
 
-            // write to flie
-            for(Order order:orderMap.values()){
-                orderAsText = marshallOrder(order);
-                out.println(orderAsText);
-                out.flush();
-            }
-
-            out.close();
+        out.close();
 
     }
 
@@ -95,9 +95,9 @@ public class OrderDaoFileImpl implements OrderDao {
         File folder = new File(ORDER_FOLDER);
         File[] listOfFiles = folder.listFiles();
 
-        if(listOfFiles != null){
-            for(int i = 0; i < listOfFiles.length; i++){
-                if(listOfFiles[i].isFile()){
+        if (listOfFiles != null) {
+            for (int i = 0; i < listOfFiles.length; i++) {
+                if (listOfFiles[i].isFile()) {
                     String filename = listOfFiles[i].getName();
                     LocalDate date = getDateFromOrderFilename(filename);
                     loadOrdersByDate(date);
@@ -107,12 +107,12 @@ public class OrderDaoFileImpl implements OrderDao {
 
     }
 
-    public LocalDate getDateFromOrderFilename(String filename){
+    public LocalDate getDateFromOrderFilename(String filename) {
         // extract the date from the filename
         StringBuilder sb = new StringBuilder();
 
-        for(char c: filename.toCharArray()){
-            if(Character.isDigit(c)){
+        for (char c : filename.toCharArray()) {
+            if (Character.isDigit(c)) {
                 sb.append(c);
             }
         }
@@ -127,40 +127,37 @@ public class OrderDaoFileImpl implements OrderDao {
     @Override
     public int getNextOrderNumber() {
 
-//        for(LocalDate date: orders.keySet()){
-////            for(Integer orderNumber: orders.get(date).keySet()){
-////                if(largestOrderNumber < orderNumber){
-////                    largestOrderNumber = orderNumber;
-////                }
-////            }
-//
-//        }
-        largestOrderNumber = orders.values().stream()
-                .flatMap(m -> m.keySet().stream())
-                .max(Integer::compareTo)
-                .orElse(0);
+        for (LocalDate date : orders.keySet()) {
+            for (Integer orderNumber : orders.get(date).keySet()) {
+                if (largestOrderNumber < orderNumber) {
+                    largestOrderNumber = orderNumber;
+                }
+            }
 
-        return largestOrderNumber+1;
+        }
+
+        return largestOrderNumber + 1;
     }
 
     @Override
     public Order addOrder(LocalDate date, Order order) {
         Map<Integer, Order> orderByDate = orders.getOrDefault(date, new HashMap<>());
 
-        orderByDate.put(order.getOrderNumber(),order);
+        orderByDate.put(order.getOrderNumber(), order);
 
         // load into in-memory storage;
-        orders.put(date,orderByDate);
+        orders.put(date, orderByDate);
 
         return order;
     }
 
     @Override
     public Order getOrder(LocalDate date, int orderNumber) throws NoSuchOrderException {
-        try{
+        try {
             return orders.get(date).get(orderNumber);
-        }catch (NullPointerException e){
-            throw new NoSuchOrderException("Order with date: "+date.toString()+" and order number: "+orderNumber+" not found",e);
+        } catch (NullPointerException e) {
+            throw new NoSuchOrderException(
+                    "Order with date: " + date.toString() + " and order number: " + orderNumber + " not found", e);
         }
     }
 
@@ -168,8 +165,8 @@ public class OrderDaoFileImpl implements OrderDao {
     public Order editOrder(LocalDate date, Order order) throws PersistenceException {
         // update in memory storage
         Map<Integer, Order> map = orders.get(date);
-        map.put(order.getOrderNumber(),order);
-        orders.put(date,map);
+        map.put(order.getOrderNumber(), order);
+        orders.put(date, map);
 
         // write to file
         writeToFile(date);
@@ -188,14 +185,14 @@ public class OrderDaoFileImpl implements OrderDao {
         Map<Integer, Order> map = orders.get(date);
         Order order = map.get(orderNumber);
         map.remove(orderNumber);
-        orders.put(date,map);
+        orders.put(date, map);
         return order;
     }
 
-    private String generateOrderFilename(LocalDate date){
+    private String generateOrderFilename(LocalDate date) {
         int year = date.getYear(), month = date.getMonthValue(), day = date.getDayOfMonth();
-        String dateStr = ""+(month < 10 ? "0"+month : month) + (day < 10 ? "0"+day : day) + year;
-        String file = ORDER_FOLDER+"Orders_"+dateStr+".txt";
+        String dateStr = "" + (month < 10 ? "0" + month : month) + (day < 10 ? "0" + day : day) + year;
+        String file = ORDER_FOLDER + "Orders_" + dateStr + ".txt";
         return file;
     }
 
@@ -205,11 +202,11 @@ public class OrderDaoFileImpl implements OrderDao {
         String file = generateOrderFilename(date);
 
         // load the order file into memory
-        try{
+        try {
             sc = new Scanner(new BufferedReader(new FileReader(file)));
 
-        }catch (FileNotFoundException e){
-            throw new PersistenceException("-_- File: "+file+" is not found.",e);
+        } catch (FileNotFoundException e) {
+            throw new PersistenceException("-_- File: " + file + " is not found.", e);
         }
 
         // load the file content into hashmap object
@@ -219,16 +216,16 @@ public class OrderDaoFileImpl implements OrderDao {
         // skip the headers
         int count = 0;
 
-        Map<Integer,Order> allOrders = new HashMap<>();
-        while(sc.hasNextLine()){
+        Map<Integer, Order> allOrders = new HashMap<>();
+        while (sc.hasNextLine()) {
             currLine = sc.nextLine();
-            if(count != 0){
+            if (count != 0) {
                 currOrder = unmarshallOrder(currLine);
-                allOrders.put(currOrder.getOrderNumber(),currOrder);
+                allOrders.put(currOrder.getOrderNumber(), currOrder);
             }
             count++;
         }
-        orders.put(date,allOrders);
+        orders.put(date, allOrders);
 
         // close the scanner
         sc.close();
