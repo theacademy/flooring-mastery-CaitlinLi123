@@ -92,8 +92,6 @@ class ServiceImplTest {
     @Test
     void testGetOrder() throws PersistenceException {
         assertEquals(service.getOrder(date, 1), firstOrder);
-
-        // assertThrows(PersistenceException.class, () -> service.getOrder(date, 2));
     }
 
     @Test

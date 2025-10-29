@@ -1,1 +1,2 @@
 OrderNumber,CustomerName,State,TaxRate,ProductType,Area,CostPerSquareFoot,LaborCostPerSquareFoot,MaterialCost,LaborCost,Tax,Total
+7,Yu Li,WA,9.25,Wood,101,5.15,4.75,520.15,479.75,92.490750,1092.390750
