@@ -156,7 +156,6 @@ public class OrderDaoFileImpl implements OrderDao {
         }catch (NullPointerException e){
             throw new PersistenceException("Unfound order from given date or given order number.",e);
         }
-
     }
 
     @Override

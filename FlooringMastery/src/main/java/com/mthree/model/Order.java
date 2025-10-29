@@ -1,6 +1,7 @@
 package com.mthree.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class Order {
     private int orderNumber;
@@ -128,5 +129,34 @@ public class Order {
                 ", tax=" + tax +
                 ", total=" + total +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o)return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Order order = (Order) o;
+        return orderNumber == order.orderNumber
+                && Objects.equals(customerName, order.customerName)
+                && Objects.equals(state, order.state)
+                && Objects.equals(taxRate, order.taxRate)
+                && Objects.equals(productType, order.productType)
+                && Objects.equals(area, order.area)
+                && Objects.equals(costPerSquareFoot, order.costPerSquareFoot)
+                && Objects.equals(laborCostPerSquareFoot, order.laborCostPerSquareFoot)
+                && Objects.equals(materialCost, order.materialCost)
+                && Objects.equals(laborCost, order.laborCost)
+                && Objects.equals(tax, order.tax)
+                && Objects.equals(total, order.total);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(orderNumber, customerName,
+                state, taxRate, productType,
+                area,
+                costPerSquareFoot, laborCostPerSquareFoot,
+                materialCost, laborCost,
+                tax, total);
     }
 }

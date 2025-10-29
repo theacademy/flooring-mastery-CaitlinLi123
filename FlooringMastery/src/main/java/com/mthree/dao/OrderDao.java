@@ -25,5 +25,5 @@ public interface OrderDao {
 
     Map<LocalDate, Map<Integer,Order>> getAllOrders();
 
-    Order removeOrder(LocalDate date, int orderNumber);
+    Order removeOrder(LocalDate date, int orderNumber) throws PersistenceException;
 }

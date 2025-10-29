@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Component
 public class AuditDaoFileImpl implements AuditDao{
-    private final static String AUDIT_FILE = "audit.txt";
+    private final static String AUDIT_FILE = "Data/audit.txt";
 
 
     @Override

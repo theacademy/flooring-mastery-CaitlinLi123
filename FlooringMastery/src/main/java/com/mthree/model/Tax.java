@@ -1,6 +1,7 @@
 package com.mthree.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class Tax {
     private String stateAbbreviation;
@@ -38,5 +39,20 @@ public class Tax {
                 ", stateName='" + stateName + '\'' +
                 ", taxRate=" + taxRate +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o)return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Tax tax = (Tax) o;
+        return Objects.equals(stateAbbreviation, tax.stateAbbreviation)
+                && Objects.equals(stateName, tax.stateName)
+                && Objects.equals(taxRate, tax.taxRate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(stateAbbreviation, stateName, taxRate);
     }
 }

@@ -13,13 +13,13 @@ public interface Service {
 
     int getNextOrderNumber();
 
-    Order addOrder(LocalDate date, Order order);
+    Order addOrder(LocalDate date, Order order) throws PersistenceException;
 
-    Order getOrder(LocalDate date, int orderNumber);
+    Order getOrder(LocalDate date, int orderNumber) throws PersistenceException;
 
     Order editOrder(LocalDate date, Order order) throws PersistenceException;
 
-    Order removeOrder(LocalDate date, int orderNumber);
+    Order removeOrder(LocalDate date, int orderNumber) throws PersistenceException;
 
     void exportData() throws PersistenceException;
 

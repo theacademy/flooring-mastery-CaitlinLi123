@@ -40,13 +40,14 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public Order addOrder(LocalDate date, Order order) {
+    public Order addOrder(LocalDate date, Order order) throws PersistenceException {
+        writeToAudit("ADD an order in order file "+date.toString()+" with order number: "+order.getOrderNumber());
         return orderDao.addOrder(date,order);
     }
 
     @Override
-    public Order getOrder(LocalDate date, int orderNumber) {
-        return null;
+    public Order getOrder(LocalDate date, int orderNumber) throws PersistenceException {
+        return orderDao.getOrder(date,orderNumber);
     }
 
     @Override
@@ -55,7 +56,8 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public Order removeOrder(LocalDate date, int orderNumber) {
+    public Order removeOrder(LocalDate date, int orderNumber) throws PersistenceException {
+        writeToAudit("REMOVE an order in order file "+date.toString()+" with order number: "+orderNumber);
         return orderDao.removeOrder(date,orderNumber);
     }
 
@@ -81,14 +83,7 @@ public class ServiceImpl implements Service {
 
     @Override
     public Order validateOrderNumber(LocalDate date, int orderNumber) throws PersistenceException {
-        List<Order> orders = getOrdersForDate(date);
-
-        for(Order order: orders){
-            if(order.getOrderNumber() == orderNumber){
-                return order;
-            }
-        }
-
-        return null;
+        Order order = getOrder(date,orderNumber);
+        return order;
     }
 }
