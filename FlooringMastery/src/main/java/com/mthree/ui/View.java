@@ -7,12 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 
 @Component
 public class View {
-    private UserIO io;
+    private final UserIO io;
     private static final String DELIMITER = ",";
     private static final String ORDER_HEADER = "OrderNumber,CustomerName,State,TaxRate,ProductType,Area,CostPerSquareFoot,LaborCostPerSquareFoot,MaterialCost,LaborCost,Tax,Total";
     private static final String INFO_DISPLAY_SEPERATION_LINE = "<><><><><><><><><><><><><><><><><><><><><><><><><><><>";
@@ -27,16 +28,17 @@ public class View {
     public int printMenuAndGetSelection() {
         // display the menu
         System.out.println(
-                "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n" +
-                        "* <<Flooring Program>>\n" +
-                        "* 1. Display Orders\n" +
-                        "* 2. Add an Order\n" +
-                        "* 3. Edit an Order\n" +
-                        "* 4. Remove an Order\n" +
-                        "* 5. Export All Data\n" +
-                        "* 6. Quit\n" +
-                        "*\n" +
-                        "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
+                """
+                        * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                        * <<Flooring Program>>
+                        * 1. Display Orders
+                        * 2. Add an Order
+                        * 3. Edit an Order
+                        * 4. Remove an Order
+                        * 5. Export All Data
+                        * 6. Quit
+                        *
+                        * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *""");
 
         return io.readInt("Please select from the above choices", 1, 6);
     }
@@ -88,41 +90,33 @@ public class View {
         Order order = new Order(orderNumber);
 
         // prompt the user for customerName
-        String customerName = getAndValidateNameInput("Please enter the customer name[only letters and numbers]: ");
+        String customerName = getAndValidateNameInput("Please enter the customer name[only letters and numbers]: ",false);
         order.setCustomerName(customerName);
 
-        // prompt the user for state and get the Tax information
+        // prompt the user for state and get the Tax information, the prompt should not be null
         displayAllTaxes(taxes);
-        Tax tax = getAndValidateStateInput(taxes);
-        order.setTaxRate(tax.getTaxRate());
-        order.setState(tax.getStateAbbreviation());
+        Tax tax = getAndValidateStateInput(taxes,false);
+        order = recordOrderTax(tax,order);
 
         // display available products
         displayAllProducts(products);
         // prompt user for product type
-        Product product = getAndValidateProductInput(products);
-        order.setProductType(product.getProductType());
-        order.setCostPerSquareFoot(product.getCostPerSquareFoot());
-        order.setLaborCostPerSquareFoot(product.getLaborCostPerSquareFoot());
+        Product product = getAndValidateProductInput(products, false);
+        order = recordOrderProduct(product,order);
 
         // prompt the user for area
-        BigDecimal area = getAndValidateAreaInput();
+        BigDecimal area = getAndValidateAreaInput(false);
         order.setArea(area);
 
         // calculate the materialCost
-        order.setMaterialCost(order.getCostPerSquareFoot().multiply(order.getArea()));
-
-        // calculate the laborCost
-        order.setLaborCost(order.getLaborCostPerSquareFoot().multiply(order.getArea()));
-
-        // calculate the tax
-        order.setTax((order.getMaterialCost().add(order.getLaborCost()))
-                .multiply(order.getTaxRate().divide(new BigDecimal("100"))));
-
-        // calculate total
-        order.setTotal(order.getMaterialCost().add(order.getLaborCost()).add(order.getTax()));
+        order = calculateCosts(order);
 
         return order;
+    }
+
+    public boolean hitEnter(String input){
+
+        return input == null || input.isEmpty();
     }
 
     public void displayAllTaxes(List<Tax> taxes) {
@@ -139,7 +133,7 @@ public class View {
         }
         io.print(INFO_DISPLAY_SEPERATION_LINE);
         io.print("------------------------------------------------------------------------------");
-    };
+    }
 
     public void displayAllProducts(List<Product> products) {
         io.print("------Here's all the available products------");
@@ -155,7 +149,7 @@ public class View {
         }
         io.print(INFO_DISPLAY_SEPERATION_LINE);
         io.print("----------------------------------------------");
-    };
+    }
 
     public void displayAddOrderSuccess() {
         io.print("You have added the order in the memory.");
@@ -166,52 +160,72 @@ public class View {
         io.print("=== Edit Order ===");
     }
 
+    public Order recordOrderTax(Tax tax, Order order){
+        order.setTaxRate(tax.getTaxRate());
+        order.setState(tax.getStateAbbreviation());
+        return order;
+    }
+
+    public Order recordOrderProduct(Product product, Order order){
+        order.setProductType(product.getProductType());
+        order.setCostPerSquareFoot(product.getCostPerSquareFoot());
+        order.setLaborCostPerSquareFoot(product.getLaborCostPerSquareFoot());
+        return order;
+    }
+
+    public Order calculateCosts(Order order){
+        // calculate the materialCost
+        order.setMaterialCost(order.getCostPerSquareFoot().multiply(order.getArea()));
+
+        // calculate the laborCost
+        order.setLaborCost(order.getLaborCostPerSquareFoot().multiply(order.getArea()));
+
+        // calculate the tax
+        order.setTax((order.getMaterialCost().add(order.getLaborCost()))
+                .multiply(order.getTaxRate().divide(new BigDecimal("100"),RoundingMode.UP)).setScale(2,RoundingMode.HALF_EVEN));
+
+        // calculate total
+        order.setTotal(order.getMaterialCost().add(order.getLaborCost()).add(order.getTax()));
+
+        return order;
+    }
+
     public Order getEditOrderInput(Order order, List<Tax> taxes, List<Product> products) {
         // customer name
-        String customerName = getAndValidateNameInput("Please enter the customer name[only letters and numbers]: ");
-        order.setCustomerName(customerName);
+        String customerName = getAndValidateNameInput("Please enter the customer name[only letters and numbers]: ",true);
+
+        // if user hits the enter key, then preserve the original data
+        if(customerName != null && !customerName.equals(order.getCustomerName())){
+            order.setCustomerName(customerName);
+        }
 
         boolean change = false;
 
         // state
-        Tax tax = getAndValidateStateInput(taxes);
+        Tax tax = getAndValidateStateInput(taxes,true);
 
-        if (!tax.getStateAbbreviation().equals(order.getState())) {
+        if (tax != null && !tax.getStateAbbreviation().equals(order.getState())) {
             // reset the new tax info
-            order.setTaxRate(tax.getTaxRate());
-            order.setState(tax.getStateAbbreviation());
+            order = recordOrderTax(tax,order);
             change = true;
         }
 
         // product type
-        Product product = getAndValidateProductInput(products);
-        if (!product.getProductType().equals(order.getProductType())) {
-            order.setProductType(product.getProductType());
-            order.setCostPerSquareFoot(product.getCostPerSquareFoot());
-            order.setLaborCostPerSquareFoot(product.getLaborCostPerSquareFoot());
+        Product product = getAndValidateProductInput(products, true);
+        if (product != null && !product.getProductType().equals(order.getProductType())) {
+            order = recordOrderProduct(product,order);
             change = true;
         }
 
         // area
-        BigDecimal area = getAndValidateAreaInput();
-        if (!area.equals(order.getArea())) {
+        BigDecimal area = getAndValidateAreaInput(true);
+        if (area != null && !area.equals(order.getArea())) {
             order.setArea(area);
             change = true;
         }
 
         if (change) {
-            // calculate the materialCost
-            order.setMaterialCost(order.getCostPerSquareFoot().multiply(order.getArea()));
-
-            // calculate the laborCost
-            order.setLaborCost(order.getLaborCostPerSquareFoot().multiply(order.getArea()));
-
-            // calculate the tax
-            order.setTax((order.getMaterialCost().add(order.getLaborCost()))
-                    .multiply(order.getTaxRate().divide(new BigDecimal("100"))));
-
-            // calculate total
-            order.setTotal(order.getMaterialCost().add(order.getLaborCost()).add(order.getTax()));
+            calculateCosts(order);
         }
 
         return order;
@@ -230,9 +244,9 @@ public class View {
 
         while (true) {
             String selecion = io.readString(message);
-            if (selecion.toUpperCase().equals("Y")) {
+            if (selecion.equalsIgnoreCase("Y")) {
                 return true;
-            } else if (selecion.toUpperCase().equals("N")) {
+            } else if (selecion.equalsIgnoreCase("N")) {
                 return false;
             } else {
                 io.print("Please try again and type either Y or N");
@@ -245,9 +259,9 @@ public class View {
         io.print("Succeed in removing the order.");
     }
 
-    public void displayExportDataSuccess() {
-        io.print("Succeed in exporting all in memory orders.");
-    }
+//    public void displayExportDataSuccess() {
+//        io.print("Succeed in exporting all in memory orders.");
+//    }
 
     public void displayExitMessage() {
         io.print("===========GOOD BYE!==============");
@@ -272,11 +286,16 @@ public class View {
         }
     }
 
-    public String getAndValidateNameInput(String message) {
+    public String getAndValidateNameInput(String message, boolean skip) {
         String customerName;
 
         while (true) {
             customerName = io.readString(message);
+
+            if(skip && hitEnter(customerName)){
+                return null;
+            }
+
             if (customerName.matches("^[a-zA-Z0-9 ]+$")) {
                 break;
             } else {
@@ -287,11 +306,16 @@ public class View {
         return customerName;
     }
 
-    public Tax getAndValidateStateInput(List<Tax> taxes) {
+    public Tax getAndValidateStateInput(List<Tax> taxes, boolean skip) {
         String state;
 
         while (true) {
             state = io.readString("Please enter the state name in either full or abbreviated version: ");
+
+            // hits enter -> stay the same
+            if(skip && hitEnter(state)){
+                return null;
+            }
 
             for (Tax tax : taxes) {
                 if (tax.getStateAbbreviation().equals(state) || tax.getStateName().equals(state)) {
@@ -303,11 +327,16 @@ public class View {
         }
     }
 
-    public Product getAndValidateProductInput(List<Product> products) {
+    public Product getAndValidateProductInput(List<Product> products, boolean skip) {
         String productType;
 
         while (true) {
             productType = io.readString("Please enter the productType: ");
+
+            // hits enter
+            if(skip && hitEnter(productType)){
+                return null;
+            }
 
             for (Product product : products) {
                 if (product.getProductType().toLowerCase().equals(productType)) {
@@ -319,7 +348,7 @@ public class View {
         }
     }
 
-    public BigDecimal getAndValidateAreaInput() {
+    public BigDecimal getAndValidateAreaInput(boolean skip) {
         String areaInput;
         BigDecimal area = new BigDecimal("0");
 
@@ -327,12 +356,17 @@ public class View {
 
             try {
                 areaInput = io.readString("Please enter the area in sq ft(min:100 sq ft): ");
+
+                if(skip && hitEnter(areaInput)){
+                    return null;
+                }
+
                 area = new BigDecimal(areaInput);
             } catch (NumberFormatException e) {
                 displayErrorMessage("Please try again and enter a number!");
             }
 
-            if (area.compareTo(new BigDecimal(100)) == -1) {
+            if (area.compareTo(new BigDecimal(100)) < 0) {
                 displayErrorMessage("Please try again and enter a number not smaller than 100!");
             } else {
                 return area;
@@ -342,7 +376,14 @@ public class View {
     }
 
     public int getOrderNumber() {
-        int orderNumber = io.readInt("Please give the order number");
-        return orderNumber;
+        return io.readInt("Please give the order number");
+    }
+
+    public void displayExportDataBanner() {
+        io.print("=== Export in-memory data to files ===");
+    }
+
+    public void displayExportSuccessBanner() {
+        io.print("Succeed in exporting all in-memory storage to files.");
     }
 }

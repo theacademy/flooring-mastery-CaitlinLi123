@@ -1,6 +1,7 @@
 package com.mthree.service;
 
 import com.mthree.dao.*;
+import com.mthree.exception.NoSuchOrderException;
 import com.mthree.exception.PersistenceException;
 import com.mthree.model.Order;
 import com.mthree.model.Product;
@@ -46,7 +47,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public Order getOrder(LocalDate date, int orderNumber) throws PersistenceException {
+    public Order getOrder(LocalDate date, int orderNumber) throws NoSuchOrderException {
         return orderDao.getOrder(date,orderNumber);
     }
 
@@ -82,7 +83,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public Order validateOrderNumber(LocalDate date, int orderNumber) throws PersistenceException {
+    public Order validateOrderNumber(LocalDate date, int orderNumber) throws NoSuchOrderException {
         Order order = getOrder(date,orderNumber);
         return order;
     }

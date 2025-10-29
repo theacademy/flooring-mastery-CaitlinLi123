@@ -1,5 +1,6 @@
 package com.mthree.service;
 
+import com.mthree.exception.NoSuchOrderException;
 import com.mthree.exception.PersistenceException;
 import com.mthree.model.Order;
 import com.mthree.model.Product;
@@ -15,7 +16,7 @@ public interface Service {
 
     Order addOrder(LocalDate date, Order order) throws PersistenceException;
 
-    Order getOrder(LocalDate date, int orderNumber) throws PersistenceException;
+    Order getOrder(LocalDate date, int orderNumber) throws PersistenceException, NoSuchOrderException;
 
     Order editOrder(LocalDate date, Order order) throws PersistenceException;
 
@@ -29,5 +30,5 @@ public interface Service {
 
     void writeToAudit(String message) throws PersistenceException;
 
-    Order validateOrderNumber(LocalDate date, int orderNumber) throws PersistenceException;
+    Order validateOrderNumber(LocalDate date, int orderNumber) throws NoSuchOrderException;
 }

@@ -1,5 +1,6 @@
 package com.mthree.dao;
 
+import com.mthree.exception.NoSuchOrderException;
 import com.mthree.exception.PersistenceException;
 import com.mthree.model.Order;
 import org.springframework.cglib.core.Local;
@@ -19,7 +20,7 @@ public interface OrderDao {
 
     Order addOrder(LocalDate date, Order order);
 
-    Order getOrder(LocalDate date, int orderNumber) throws PersistenceException;
+    Order getOrder(LocalDate date, int orderNumber) throws NoSuchOrderException;
 
     Order editOrder(LocalDate date, Order order) throws PersistenceException;
 

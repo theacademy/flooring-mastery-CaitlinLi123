@@ -1,5 +1,6 @@
 package com.mthree.dao;
 
+import com.mthree.exception.NoSuchOrderException;
 import com.mthree.exception.PersistenceException;
 import com.mthree.model.Order;
 import org.springframework.stereotype.Component;
@@ -126,13 +127,18 @@ public class OrderDaoFileImpl implements OrderDao {
     @Override
     public int getNextOrderNumber() {
 
-        for(LocalDate date: orders.keySet()){
-            for(Integer orderNumber: orders.get(date).keySet()){
-                if(largestOrderNumber < orderNumber){
-                    largestOrderNumber = orderNumber;
-                }
-            }
-        }
+//        for(LocalDate date: orders.keySet()){
+////            for(Integer orderNumber: orders.get(date).keySet()){
+////                if(largestOrderNumber < orderNumber){
+////                    largestOrderNumber = orderNumber;
+////                }
+////            }
+//
+//        }
+        largestOrderNumber = orders.values().stream()
+                .flatMap(m -> m.keySet().stream())
+                .max(Integer::compareTo)
+                .orElse(0);
 
         return largestOrderNumber+1;
     }
@@ -150,11 +156,11 @@ public class OrderDaoFileImpl implements OrderDao {
     }
 
     @Override
-    public Order getOrder(LocalDate date, int orderNumber) throws PersistenceException {
+    public Order getOrder(LocalDate date, int orderNumber) throws NoSuchOrderException {
         try{
             return orders.get(date).get(orderNumber);
         }catch (NullPointerException e){
-            throw new PersistenceException("Unfound order from given date or given order number.",e);
+            throw new NoSuchOrderException("Order with date: "+date.toString()+" and order number: "+orderNumber+" not found",e);
         }
     }
 

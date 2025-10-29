@@ -1,6 +1,7 @@
 package com.mthree.controller;
 
 import com.mthree.dao.OrderDao;
+import com.mthree.exception.NoSuchOrderException;
 import com.mthree.exception.PersistenceException;
 import com.mthree.model.Order;
 import com.mthree.model.Product;
@@ -70,10 +71,12 @@ public class Controller {
     }
 
     private void exportAllData() throws PersistenceException {
+        view.displayExportDataBanner();
         service.exportData();
+        view.displayExportSuccessBanner();
     }
 
-    private void removeAnOrder() throws PersistenceException {
+    private void removeAnOrder() throws PersistenceException, NoSuchOrderException {
         // display the banner
         view.displayRemoveOrderBanner();
 
@@ -93,7 +96,7 @@ public class Controller {
             order = service.validateOrderNumber(date,orderNumber);
 
             if(order == null){
-                view.displayErrorMessage("Cannot find the order! Please try again.");
+                throw new NoSuchOrderException("Order with date: "+date.toString()+" and order number: "+orderNumber+" not found");
             }else{
                 break;
             }
@@ -112,7 +115,7 @@ public class Controller {
         }
     }
 
-    private void editAnOrder() throws PersistenceException {
+    private void editAnOrder() throws NoSuchOrderException, PersistenceException {
         // display the banner
         view.displayEditOrderBanner();
 
@@ -120,40 +123,40 @@ public class Controller {
         LocalDate date;
         int orderNumber;
 
-        while (true){
-            // Prompt the user for date
-            date = view.getDateInput();
+        // Prompt the user for date
+        date = view.getDateInput();
 
-            // Prompt the user for order numberl
-            orderNumber = view.getOrderNumber();
+        // Prompt the user for order numberl
+        orderNumber = view.getOrderNumber();
 
+        try{
             // validate the ordernumber in a given date orders
             order = service.validateOrderNumber(date,orderNumber);
+            // Get the taxes and products
+            List<Tax> taxes = service.getTaxes();
+            List<Product> products = service.getProducts();
 
-            if(order == null){
-                view.displayErrorMessage("Cannot find the order! Please try again.");
-            }else{
-                break;
+            // Prompt the user to edit each editable data
+            order = view.getEditOrderInput(order,taxes, products);
+
+            // Display the editted order
+            view.displayOrderInfo(order);
+
+            // Prompt the user for whether the edit should be saved
+            boolean save = view.getConfirmation("Do you want to save the data? [Y/N]: ");
+
+            if(save){
+                service.editOrder(date, order);
+                view.displayEditOrderSuccess();
             }
+        }catch (NoSuchOrderException e){
+            view.displayErrorMessage(e.getMessage());
+        }catch (PersistenceException e){
+            view.displayErrorMessage(e.getMessage());
+        }catch (Exception e){
+            view.displayErrorMessage("Unknown error. Please try again");
         }
 
-        // Get the taxes and products
-        List<Tax> taxes = service.getTaxes();
-        List<Product> products = service.getProducts();
-
-        // Prompt the user to edit each editable data
-        order = view.getEditOrderInput(order,taxes, products);
-
-        // Display the editted order
-        view.displayOrderInfo(order);
-
-        // Prompt the user for whether the edit should be saved
-        boolean save = view.getConfirmation("Do you want to save the data? [Y/N]: ");
-
-        if(save){
-            service.editOrder(date, order);
-            view.displayEditOrderSuccess();
-        }
     }
 
     private void addAnOrder() throws PersistenceException {
