@@ -203,7 +203,7 @@ public class OrderDaoFileImpl implements OrderDao {
             sc = new Scanner(new BufferedReader(new FileReader(file)));
 
         }catch (FileNotFoundException e){
-            throw new PersistenceException("-_- Could not load order data into memory.",e);
+            throw new PersistenceException("-_- File: "+file+" is not found.",e);
         }
 
         // load the file content into hashmap object

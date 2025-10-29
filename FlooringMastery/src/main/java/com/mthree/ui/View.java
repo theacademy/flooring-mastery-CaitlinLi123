@@ -3,7 +3,6 @@ package com.mthree.ui;
 import com.mthree.model.Order;
 import com.mthree.model.Product;
 import com.mthree.model.Tax;
-import jdk.jshell.execution.LoaderDelegate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,34 +13,36 @@ import java.util.List;
 @Component
 public class View {
     private UserIO io;
-    private final String DELIMITER = ",";
-    private static int nextAvailableOrderNum;
+    private static final String DELIMITER = ",";
+    private static final String ORDER_HEADER = "OrderNumber,CustomerName,State,TaxRate,ProductType,Area,CostPerSquareFoot,LaborCostPerSquareFoot,MaterialCost,LaborCost,Tax,Total";
+    private static final String INFO_DISPLAY_SEPERATION_LINE = "<><><><><><><><><><><><><><><><><><><><><><><><><><><>";
+    private static final String TAX_HEADER = "State,StateName,TaxRate";
+    private static final String PRODUCT_HEADER = "ProductType,CostPerSquareFoot,LaborCostPerSquareFoot";
 
     @Autowired
-    public View(UserIO io){
+    public View(UserIO io) {
         this.io = io;
     }
 
     public int printMenuAndGetSelection() {
         // display the menu
         System.out.println(
-                "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n"+
-                "* <<Flooring Program>>\n"+
-                "* 1. Display Orders\n"+
-                "* 2. Add an Order\n"+
-                "* 3. Edit an Order\n"+
-                "* 4. Remove an Order\n"+
-                "* 5. Export All Data\n"+
-                "* 6. Quit\n"+
-                "*\n"+
-                "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-        );
+                "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n" +
+                        "* <<Flooring Program>>\n" +
+                        "* 1. Display Orders\n" +
+                        "* 2. Add an Order\n" +
+                        "* 3. Edit an Order\n" +
+                        "* 4. Remove an Order\n" +
+                        "* 5. Export All Data\n" +
+                        "* 6. Quit\n" +
+                        "*\n" +
+                        "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
 
-        return io.readInt("Please select from the above choices",1,6);
+        return io.readInt("Please select from the above choices", 1, 6);
     }
 
     public void displayErrorMessage(String message) {
-        io.print("🚫"+message);
+        io.print("🚫" + message);
     }
 
     public void displayDisplayAllBanner() {
@@ -53,24 +54,15 @@ public class View {
     }
 
     public void displayOrderList(List<Order> orders) {
-        for(Order order: orders){
-            String orderInfo = order.getOrderNumber() + DELIMITER
-                    + order.getCustomerName() + DELIMITER
-                    + order.getState() + DELIMITER
-                    + order.getTaxRate() + DELIMITER
-                    + order.getProductType() + DELIMITER
-                    + order.getArea() + DELIMITER
-                    + order.getCostPerSquareFoot() + DELIMITER
-                    + order.getLaborCostPerSquareFoot() + DELIMITER
-                    + order.getMaterialCost() + DELIMITER
-                    + order.getLaborCost() + DELIMITER
-                    + order.getTax() + DELIMITER
-                    + order.getTotal();
-            io.print(orderInfo);
+        io.print(INFO_DISPLAY_SEPERATION_LINE);
+        io.print(ORDER_HEADER);
+        for (Order order : orders) {
+            displayOrderInfo(order);
         }
+        io.print(INFO_DISPLAY_SEPERATION_LINE);
     }
 
-    public void displayOrderInfo(Order order){
+    public void displayOrderInfo(Order order) {
         String orderInfo = order.getOrderNumber() + DELIMITER
                 + order.getCustomerName() + DELIMITER
                 + order.getState() + DELIMITER
@@ -90,7 +82,7 @@ public class View {
         io.print("=== Add Order ===");
     }
 
-    public Order getAddOrderInput(int orderNumber, List<Tax> taxes, List<Product> products){
+    public Order getAddOrderInput(int orderNumber, List<Tax> taxes, List<Product> products) {
 
         // create a new Order object
         Order order = new Order(orderNumber);
@@ -100,6 +92,7 @@ public class View {
         order.setCustomerName(customerName);
 
         // prompt the user for state and get the Tax information
+        displayAllTaxes(taxes);
         Tax tax = getAndValidateStateInput(taxes);
         order.setTaxRate(tax.getTaxRate());
         order.setState(tax.getStateAbbreviation());
@@ -123,7 +116,8 @@ public class View {
         order.setLaborCost(order.getLaborCostPerSquareFoot().multiply(order.getArea()));
 
         // calculate the tax
-        order.setTax((order.getMaterialCost().add(order.getLaborCost())).multiply(order.getTaxRate().divide(new BigDecimal("100"))));
+        order.setTax((order.getMaterialCost().add(order.getLaborCost()))
+                .multiply(order.getTaxRate().divide(new BigDecimal("100"))));
 
         // calculate total
         order.setTotal(order.getMaterialCost().add(order.getLaborCost()).add(order.getTax()));
@@ -131,29 +125,48 @@ public class View {
         return order;
     }
 
-    public void displayAllProducts(List<Product> products){
+    public void displayAllTaxes(List<Tax> taxes) {
+        io.print("------Here's all the available states and corresponding tax information------");
+        io.print(INFO_DISPLAY_SEPERATION_LINE);
+        io.print(TAX_HEADER);
+        for (Tax tax : taxes) {
+            // ProductType,CostPerSquareFoot,LaborCostPerSquareFoot
+            String info = tax.getStateAbbreviation() + DELIMITER
+                    + tax.getStateName() + DELIMITER
+                    + tax.getTaxRate();
+
+            io.print(info);
+        }
+        io.print(INFO_DISPLAY_SEPERATION_LINE);
+        io.print("------------------------------------------------------------------------------");
+    };
+
+    public void displayAllProducts(List<Product> products) {
         io.print("------Here's all the available products------");
-        for(Product product: products){
+        io.print(INFO_DISPLAY_SEPERATION_LINE);
+        io.print(PRODUCT_HEADER);
+        for (Product product : products) {
             // ProductType,CostPerSquareFoot,LaborCostPerSquareFoot
             String info = product.getProductType() + DELIMITER
-                        + product.getCostPerSquareFoot() + DELIMITER
+                    + product.getCostPerSquareFoot() + DELIMITER
                     + product.getLaborCostPerSquareFoot();
 
             io.print(info);
         }
+        io.print(INFO_DISPLAY_SEPERATION_LINE);
         io.print("----------------------------------------------");
     };
 
-    public void displayAddOrderSuccess(){
+    public void displayAddOrderSuccess() {
         io.print("You have added the order in the memory.");
         io.print("========================================");
     }
 
-    public void displayEditOrderBanner(){
+    public void displayEditOrderBanner() {
         io.print("=== Edit Order ===");
     }
 
-    public Order getEditOrderInput(Order order, List<Tax> taxes, List<Product> products){
+    public Order getEditOrderInput(Order order, List<Tax> taxes, List<Product> products) {
         // customer name
         String customerName = getAndValidateNameInput("Please enter the customer name[only letters and numbers]: ");
         order.setCustomerName(customerName);
@@ -163,7 +176,7 @@ public class View {
         // state
         Tax tax = getAndValidateStateInput(taxes);
 
-        if(!tax.getStateAbbreviation().equals(order.getState())){
+        if (!tax.getStateAbbreviation().equals(order.getState())) {
             // reset the new tax info
             order.setTaxRate(tax.getTaxRate());
             order.setState(tax.getStateAbbreviation());
@@ -172,7 +185,7 @@ public class View {
 
         // product type
         Product product = getAndValidateProductInput(products);
-        if(!product.getProductType().equals(order.getProductType())){
+        if (!product.getProductType().equals(order.getProductType())) {
             order.setProductType(product.getProductType());
             order.setCostPerSquareFoot(product.getCostPerSquareFoot());
             order.setLaborCostPerSquareFoot(product.getLaborCostPerSquareFoot());
@@ -181,12 +194,12 @@ public class View {
 
         // area
         BigDecimal area = getAndValidateAreaInput();
-        if(!area.equals(order.getArea())){
+        if (!area.equals(order.getArea())) {
             order.setArea(area);
             change = true;
         }
 
-        if(change){
+        if (change) {
             // calculate the materialCost
             order.setMaterialCost(order.getCostPerSquareFoot().multiply(order.getArea()));
 
@@ -194,7 +207,8 @@ public class View {
             order.setLaborCost(order.getLaborCostPerSquareFoot().multiply(order.getArea()));
 
             // calculate the tax
-            order.setTax((order.getMaterialCost().add(order.getLaborCost())).multiply(order.getTaxRate().divide(new BigDecimal("100"))));
+            order.setTax((order.getMaterialCost().add(order.getLaborCost()))
+                    .multiply(order.getTaxRate().divide(new BigDecimal("100"))));
 
             // calculate total
             order.setTotal(order.getMaterialCost().add(order.getLaborCost()).add(order.getTax()));
@@ -203,69 +217,69 @@ public class View {
         return order;
     }
 
-    public void displayEditOrderSuccess(){
+    public void displayEditOrderSuccess() {
         io.print("You have edited the order and saved it to the file.");
         io.print("========================================");
     }
 
-    public void displayRemoveOrderBanner(){
+    public void displayRemoveOrderBanner() {
         io.print("=== Remove Order ===");
     }
 
-    public boolean getConfirmation(String message){
+    public boolean getConfirmation(String message) {
 
-        while (true){
+        while (true) {
             String selecion = io.readString(message);
-            if(selecion.toUpperCase().equals("Y")){
+            if (selecion.toUpperCase().equals("Y")) {
                 return true;
-            }else if(selecion.toUpperCase().equals("N")){
+            } else if (selecion.toUpperCase().equals("N")) {
                 return false;
-            }else{
+            } else {
                 io.print("Please try again and type either Y or N");
             }
         }
 
     }
 
-    public void displayRemoveOrderSuccess(){
-
+    public void displayRemoveOrderSuccess() {
+        io.print("Succeed in removing the order.");
     }
 
-    public void displayExportDataSuccess(){
-
+    public void displayExportDataSuccess() {
+        io.print("Succeed in exporting all in memory orders.");
     }
 
-    public void displayExitMessage(){
+    public void displayExitMessage() {
         io.print("===========GOOD BYE!==============");
     }
 
-    public void displayUnknownCommandMessage(){
+    public void displayUnknownCommandMessage() {
         io.print("🚫Unknown command.");
     }
 
-    public LocalDate getFutureDate(){
-        while (true){
+    public LocalDate getFutureDate() {
+        while (true) {
             io.print("Please enter a future date for the order below.");
             LocalDate date = getDateInput();
             LocalDate today = LocalDate.now();
 
-            if(date.isAfter(today)){
+            if (date.isAfter(today)) {
                 return date;
-            }else{
+            } else {
                 io.print("Please try again and give a future date!");
             }
 
         }
     }
 
-    public String getAndValidateNameInput(String message){
+    public String getAndValidateNameInput(String message) {
         String customerName;
 
-        while(true){
+        while (true) {
             customerName = io.readString(message);
-            if(customerName.matches("^[a-zA-Z0-9 ]+$")){
+            if (customerName.matches("^[a-zA-Z0-9 ]+$")) {
                 break;
-            }else{
+            } else {
                 io.print("🚫Invalid input. Please try again");
             }
         }
@@ -273,14 +287,14 @@ public class View {
         return customerName;
     }
 
-    public Tax getAndValidateStateInput(List<Tax> taxes){
+    public Tax getAndValidateStateInput(List<Tax> taxes) {
         String state;
 
-        while(true){
+        while (true) {
             state = io.readString("Please enter the state name in either full or abbreviated version: ");
 
-            for(Tax tax: taxes){
-                if(tax.getStateAbbreviation().equals(state) || tax.getStateName().equals(state)){
+            for (Tax tax : taxes) {
+                if (tax.getStateAbbreviation().equals(state) || tax.getStateName().equals(state)) {
                     return tax;
                 }
             }
@@ -289,14 +303,14 @@ public class View {
         }
     }
 
-    public Product getAndValidateProductInput(List<Product> products){
+    public Product getAndValidateProductInput(List<Product> products) {
         String productType;
 
-        while (true){
+        while (true) {
             productType = io.readString("Please enter the productType: ");
 
-            for(Product product: products){
-                if(product.getProductType().equals(productType)){
+            for (Product product : products) {
+                if (product.getProductType().toLowerCase().equals(productType)) {
                     return product;
                 }
             }
@@ -305,22 +319,22 @@ public class View {
         }
     }
 
-    public BigDecimal getAndValidateAreaInput(){
+    public BigDecimal getAndValidateAreaInput() {
         String areaInput;
         BigDecimal area = new BigDecimal("0");
 
-        while(true){
+        while (true) {
 
-            try{
+            try {
                 areaInput = io.readString("Please enter the area in sq ft(min:100 sq ft): ");
                 area = new BigDecimal(areaInput);
-            }catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 displayErrorMessage("Please try again and enter a number!");
             }
 
-            if(area.compareTo(new BigDecimal(100)) == -1){
+            if (area.compareTo(new BigDecimal(100)) == -1) {
                 displayErrorMessage("Please try again and enter a number not smaller than 100!");
-            }else{
+            } else {
                 return area;
             }
 
