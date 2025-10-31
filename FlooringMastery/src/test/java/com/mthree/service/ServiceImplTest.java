@@ -1,5 +1,6 @@
 package com.mthree.service;
 
+import com.mthree.exception.NoSuchOrderException;
 import com.mthree.exception.PersistenceException;
 import com.mthree.model.Order;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,7 +83,7 @@ class ServiceImplTest {
     }
 
     @Test
-    void testAddOrder() throws PersistenceException {
+    void testAddOrder() throws PersistenceException, NoSuchOrderException {
         LocalDate date2 = LocalDate.parse("10302025", DateTimeFormatter.ofPattern("MMddyyyy"));
         service.addOrder(date2, secondOrder);
 
@@ -90,12 +91,12 @@ class ServiceImplTest {
     }
 
     @Test
-    void testGetOrder() throws PersistenceException {
+    void testGetOrder() throws PersistenceException, NoSuchOrderException {
         assertEquals(service.getOrder(date, 1), firstOrder);
     }
 
     @Test
-    void testEditOrder() throws PersistenceException {
+    void testEditOrder() throws PersistenceException, NoSuchOrderException {
         Order orderInMemory = service.getOrder(date, 1);
 
         orderInMemory.setArea(new BigDecimal("200"));
@@ -106,7 +107,7 @@ class ServiceImplTest {
     }
 
     @Test
-    void testRemoveOrder() throws PersistenceException {
+    void testRemoveOrder() throws PersistenceException, NoSuchOrderException {
         Order orderInMemory = service.getOrder(date, 1);
 
         service.removeOrder(date, orderInMemory.getOrderNumber());
@@ -125,7 +126,7 @@ class ServiceImplTest {
     }
 
     @Test
-    void testValidateOrderNumber() throws PersistenceException {
+    void testValidateOrderNumber() throws PersistenceException, NoSuchOrderException {
         assertEquals(firstOrder, service.validateOrderNumber(date, 1));
     }
 }

@@ -145,10 +145,12 @@ public class Controller {
             // Prompt the user for whether the edit should be saved
             boolean save = view.getConfirmation("Do you want to save the data? [Y/N]: ");
 
+            // naming of the method doesn't meet
             if(save){
                 service.editOrder(date, order);
                 view.displayEditOrderSuccess();
             }
+
         }catch (NoSuchOrderException e){
             view.displayErrorMessage(e.getMessage());
         }catch (PersistenceException e){

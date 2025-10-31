@@ -1,5 +1,6 @@
 package com.mthree.dao;
 
+import com.mthree.exception.NoSuchOrderException;
 import com.mthree.exception.PersistenceException;
 import com.mthree.model.Order;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,7 +84,7 @@ class OrderDaoFileImplTest {
     }
 
     @Test
-    void testAddOrder() throws PersistenceException {
+    void testAddOrder() throws PersistenceException, NoSuchOrderException {
         LocalDate date2 = LocalDate.parse("10302025", DateTimeFormatter.ofPattern("MMddyyyy"));
 
         orderDao.addOrder(date2, secondOrder);
@@ -92,12 +93,12 @@ class OrderDaoFileImplTest {
     }
 
     @Test
-    void testGetOrder() throws PersistenceException {
+    void testGetOrder() throws PersistenceException, NoSuchOrderException {
         assertEquals(orderDao.getOrder(date, 1), firstOrder);
     }
 
     @Test
-    void editOrder() throws PersistenceException {
+    void editOrder() throws PersistenceException, NoSuchOrderException {
         Order orderInMemory = orderDao.getOrder(date, 1);
 
         orderInMemory.setArea(new BigDecimal("200"));
